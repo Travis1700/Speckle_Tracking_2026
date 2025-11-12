@@ -9,3 +9,6 @@ Need to know:
 3) The directories in the code should point to the folder containing the metrics data files and propagation files.
 
 Data Files:
+Cn2_1e-13_Metrics_Data: 
+- This file contains propagation statistics of the beam and speckles across 500 independent simulations for a given set of parameters.
+- The contents of the file are global beam mode field radius at each z, magnitude-squared coherence at each z,
