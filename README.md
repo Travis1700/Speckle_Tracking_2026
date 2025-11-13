@@ -42,7 +42,7 @@ It contains only two per-iteration datasets: **Correlation** and **Mode-Field Ra
 ### `w0=0.01_Cn2=1e-13_l0=0.005_l=0_p=0_iteration=412.h5`
 **Used in:** Figure 1, Figure 2, Figure 4  
 
-This HDF5 file contains a single simulated optical propagation realization for a Gaussian beam.
+This file contains a single simulated optical propagation realization for a Gaussian beam.
 
 **Beam parameters:**
 - Beam waist (w0): 0.01 meters  
