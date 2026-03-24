@@ -1,6 +1,6 @@
-# Spatiotemporal Tracking of Optical Speckles in Turbulent Atmospheric Propagation — Code
+# Spatiotemporal Tracking of Optical Speckles in Turbulent Atmospheric Propagation — Code and Data
 
-This repository contains code related to our research article titled  
+This repository contains code and selected reduced data products used to recreate figures from the research article  
 **"Spatiotemporal Tracking of Optical Speckles in Turbulent Atmospheric Propagation."**
 
 **DOI:** _(to be added)_
@@ -9,122 +9,241 @@ This repository contains code related to our research article titled
 
 ## Need to know
 
-1. This repository contains the code and data required to recreate the figures used in the paper.  
-2. Download the Python notebook labeled **`Localization_Plotting.ipynb`**.  
-3. Download the files within **`GitHub_Data/`**.  
-4. Update directory paths in the notebook to point to your downloaded data (metrics and propagation files).
+1. This repository contains the code and reduced data files needed to reproduce the figures included in the paper.
+2. Download the notebook **`Figure_Recreation_Notebook_with_tracking_example_zoomed.ipynb`**.
+3. Download the files within **`GitHub_Data/`**.
+4. Update directory paths in the notebook so they point to your local copies of the downloaded files.
+5. The repository contains reduced figure-generation data products, not the full simulation archive.
 
 ---
 
-## Contents of files
+## Repository contents
 
-### `Cn2_1e-13_Metrics_Data_final.h5`
-**Used in:** Figure 1, Figure 2, Figure 3, Figure 4  
+The repository currently contains five categories of files:
 
-This file is the metrics data for a Gaussian beam propagated through turbulence  
-(Cn2 = 1e-13, w0 = 0.01 m, l0 = 0.005 m).  
-It contains only two per-iteration datasets: **Correlation** and **Mode-Field Radius (mfrarr)**.
+1. Reduced **mode-field radius (MFR)** HDF5 files  
+2. Full **time-series speckle tracking** HDF5 files  
+3. Reduced **eta-sweep summary** CSV files  
+4. One full **single-realization propagation** HDF5 file  
+5. One notebook for **figure recreation and example visualizations**
 
-- **Group naming pattern (one per iteration N):**  
-  `w0=0.01_Cn2=1e-13_l0=0.005_l=0_p=0_iteration=<N>`
+---
 
-- **Datasets inside each iteration group:**
-  - **Correlation (magnitude-squared coherence)**  
-    Shape: `(40,)`  
-    Data type: `float64`  
-    Description: Axial correlation metric per interval (40 total intervals between 41 planes)
-  - **mfrarr (Mode field radius)**  
+## 1. Reduced MFR files
+
+**Used in:** figures that plot ensemble mode-field radius (MFR) curves.
+
+These files contain reduced metrics data for all saved propagation realizations at a fixed turbulence strength. Each iteration group contains only the dataset `mfrarr`, which is the mode-field radius evaluated at the 41 saved propagation planes.
+
+### Files in this structure
+- `Cn2_1e-13_Metrics_Data.h5`
+- `Cn2_1e-14_Metrics_Data.h5`
+- `Cn2_1e-15_Metrics_Data.h5`
+
+### General structure
+- **Top-level groups:** one group per realization / beam configuration
+- **Group naming pattern:**  
+  `w0=<w0>_Cn2=<Cn2>_l0=0.005_l=0_p=0_iteration=<N>`
+
+- **Dataset inside each iteration group:**
+  - **`mfrarr`**  
+    Description: mode-field radius at each saved propagation plane  
     Shape: `(41,)`  
-    Data type: `float64`
+    Data type: floating-point array
+
+### Notes
+- These are reduced versions of the larger metrics files and only retain the dataset needed to regenerate the MFR curves.
+- The propagation axis consists of 41 saved planes over a total propagation distance of 3000 m.
 
 ---
+
+## 2. Time-series speckle tracking files
+
+**Used in:** figures based on tracked speckle width evolution, pooled width statistics, and tracked-speckle convergence analysis.
+
+These HDF5 files contain the object-level tracking output for detected speckles at a selected detection threshold. Each file corresponds to one `(w0, Cn2, l0, eta)` parameter combination.
+
+### Files in this structure
+- `Speckle_Width_TimeSeries_eta_3e-02_w0_0.01_Cn2_1e-13_l0_0.005.h5`
+- `Speckle_Width_TimeSeries_eta_3e-02_w0_0.01_Cn2_1e-14_l0_0.005.h5`
+- `Speckle_Width_TimeSeries_eta_3e-02_w0_0.01_Cn2_1e-15_l0_0.005.h5`
+- `Speckle_Width_TimeSeries_eta_3e-02_w0_0.02_Cn2_1e-13_l0_0.005.h5`
+- `Speckle_Width_TimeSeries_eta_3e-02_w0_0.02_Cn2_1e-14_l0_0.005.h5`
+- `Speckle_Width_TimeSeries_eta_3e-02_w0_0.02_Cn2_1e-15_l0_0.005.h5`
+
+### General structure
+- **Root-level contents:**
+  - `metadata`
+  - `iteration_0000`, `iteration_0001`, `iteration_0002`, ...
+
+- **Metadata group:**  
+  Stores run-level metadata such as:
+  - `w0_m`
+  - `Cn2`
+  - `l0_m`
+  - `L_m`
+  - `wavelength_m`
+  - `dim`
+  - `dx_m`
+  - `dy_m`
+  - `eta`
+  - `min_track_len_frames`
+  - `assoc_r_px`
+  - dataset `z_range`
+
+- **Iteration groups:**  
+  Each group corresponds to one propagation realization:
+  - `iteration_0000`
+  - `iteration_0001`
+  - ...
+
+  Each iteration group contains one subgroup per tracked speckle:
+  - `s0000`
+  - `s0001`
+  - `s0002`
+  - ...
+
+- **Each speckle subgroup contains:**
+  - **`z`**  
+    Shape: `(N,)`  
+    Data type: `int32`  
+    Description: axial frame indices for that tracked speckle
+
+  - **`x_px`**  
+    Shape: `(N,)`  
+    Data type: `float32`  
+    Description: x-coordinate of the tracked speckle centroid in pixels
+
+  - **`y_px`**  
+    Shape: `(N,)`  
+    Data type: `float32`  
+    Description: y-coordinate of the tracked speckle centroid in pixels
+
+  - **`width_px`**  
+    Shape: `(N,)`  
+    Data type: `float32`  
+    Description: 1/e² speckle radius in pixels
+
+  - **`width_m`**  
+    Shape: `(N,)`  
+    Data type: `float32`  
+    Description: 1/e² speckle radius in meters
+
+- **Speckle subgroup attributes include:**
+  - `creation_z`
+  - `death_z`
+  - `right_censored`
+  - `initial_x_px`
+  - `initial_y_px`
+  - `initial_intensity_raw`
+  - `initial_width_px`
+  - `min_running_mean_radius_px`
+  - `running_mean_radius_px_final`
+
+### Notes
+- `N` varies from speckle to speckle because each tracked object persists for a different number of planes.
+- These files store full tracked trajectories and widths, not just ensemble averages.
+- The filename tag `eta_3e-02` corresponds to the saved threshold labeling used in this repository.
+
+---
+
+## 3. Eta-sweep summary CSV files
+
+**Used in:** the figure showing the mean tracked speckle count as a function of detection threshold `eta`.
+
+These CSV files are reduced summary products generated from the full tracking runs. Each file corresponds to one `(w0, Cn2, l0)` combination and contains the ensemble summary statistics across the eta sweep.
+
+### Files in this structure
+- `eta_sweep_summary_w0_0.01_Cn2_1e-13_l0_0.005.csv`
+- `eta_sweep_summary_w0_0.01_Cn2_1e-14_l0_0.005.csv`
+- `eta_sweep_summary_w0_0.01_Cn2_1e-15_l0_0.005.csv`
+- `eta_sweep_summary_w0_0.02_Cn2_1e-13_l0_0.005.csv`
+- `eta_sweep_summary_w0_0.02_Cn2_1e-14_l0_0.005.csv`
+- `eta_sweep_summary_w0_0.02_Cn2_1e-15_l0_0.005.csv`
+
+### General structure
+Each CSV contains the columns:
+
+- **`eta`**  
+  Detection threshold used for the tracking run
+
+- **`n_success`**  
+  Number of successful realizations included in the summary
+
+- **`mean_tracked_count`**  
+  Mean number of tracked speckles across realizations
+
+- **`std`**  
+  Standard deviation of tracked speckle count
+
+- **`min`**  
+  Minimum tracked speckle count across realizations
+
+- **`max`**  
+  Maximum tracked speckle count across realizations
+
+### Notes
+- These files are reduced products intended specifically for the eta-sweep summary plot.
+- They are sufficient for recreating the threshold-scaling figure without requiring the full intermediate archive for every eta value.
+
+---
+
+## 4. Single-realization propagation file
 
 ### `w0=0.01_Cn2=1e-13_l0=0.005_l=0_p=0_iteration=412.h5`
-**Used in:** Figure 1, Figure 2, Figure 4  
 
-This file contains a single simulated optical propagation realization for a Gaussian beam.
+**Used in:** example propagation-field visualizations, normalized intensity-plane examples, and tracking demonstrations.
+
+This file contains a single simulated optical propagation realization for a Gaussian beam and is included as an example realization rather than as an ensemble summary product.
 
 **Beam parameters:**
-- Beam waist (w0): 0.01 meters  
-- Turbulence strength (Cn2): 1e-13 m⁻²ᐟ³  
-- Inner scale (l0): 0.005 meters  
-- Propagation length (L): 3000 meters  
+- Beam waist: `w0 = 0.01 m`
+- Turbulence strength: `Cn2 = 1e-13 m^-2/3`
+- Inner scale: `l0 = 0.005 m`
+- Propagation length: `L = 3000 m`
 
-**Structure:**
+### Structure
 - One main group:  
   `w0=0.01_Cn2=1e-13_l0=0.005_l=0_p=0_iteration=412`
-- Inside this group:
-  - **Uout_real**  
-    Description: Complex field values at each propagation step (real + imaginary encoded as `complex64`)  
+
+- **Datasets inside that group:**
+  - **`Uout_real`**  
+    Description: complex optical field at each saved propagation plane  
     Shape: `(41, 1024, 1024)`  
     Data type: `complex64`
-  - **phase_screens**  
-    Description: Random phase screens applied along the propagation path  
+
+  - **`phase_screens`**  
+    Description: applied turbulent phase screens  
     Shape: `(41, 1024, 1024)`  
     Data type: `float32`
 
----
-
-### `InitialSpeckleWidth_Average_w0_0.01_Cn2_1e-13_l0_0.005.h5`
-**Used in:** Figure 4  
-
-This file contains the average speckle width statistics across 500 propagation realizations  
-(w0 = 0.01 m, Cn2 = 1e-13 m⁻²ᐟ³, l0 = 0.005 m).
-
-**Datasets:**
-- **alive_counts**  
-  Shape: `(41,)`  
-  Data type: `int32`  
-  Description: Number of active speckles detected at each propagation plane  
-- **avg_width**  
-  Shape: `(41,)`  
-  Data type: `float64`  
-  Description: Mean 1/e² speckle width averaged across all realizations, per propagation plane  
-- **widths_per_iter**  
-  Shape: `(500, 41)`  
-  Data type: `float64`  
-  Description: Individual 1/e² speckle widths for each of 500 iterations  
-- **zlist_norm**  
-  Shape: `(41,)`  
-  Data type: `float64`  
-  Description: Normalized axial coordinate array corresponding to the 41 sampled propagation planes  
-
-Each column in the width arrays corresponds to a discrete normalized propagation distance.
+### Notes
+- This is one realization selected from a larger ensemble.
+- It contains the full propagation field and phase-screen data, unlike the reduced summary products above.
 
 ---
 
-### `Speckle_Width_TimeSeries_w0_0.01_Cn2_1e-13_l0_0.005.h5`
-**Used in:** Figure 4  
+## 5. Figure recreation notebook
 
-This HDF5 file contains individual speckle widths and positions for multiple propagation realizations of a Gaussian beam under turbulence characterized by  
-w0 = 0.01 m, Cn2 = 1e-13 m⁻²ᐟ³, and l0 = 0.005 m.
+### `Figure_Recreation_Notebook_with_tracking_example_zoomed.ipynb`
 
-**Structure:**
-- Each iteration group (`iteration_0000`, `iteration_0001`, …) corresponds to a single realization.  
-- Within each iteration group are subgroups (`sXXXX`), each representing one detected speckle tracked across multiple axial planes.
+This notebook is the main figure-recreation entry point for the repository.
 
-**Each speckle subgroup contains:**
-- **width_m**  
-  Shape: `(N,)`, dtype `float32` — Speckle 1/e² radius in meters  
-- **width_px**  
-  Shape: `(N,)`, dtype `float32` — Speckle width in pixels  
-- **x_px**  
-  Shape: `(N,)`, dtype `float32` — X-coordinate of speckle centroid  
-- **y_px**  
-  Shape: `(N,)`, dtype `float32` — Y-coordinate of speckle centroid  
-- **z**  
-  Shape: `(N,)`, dtype `int32` — Axial frame indices  
+It includes code to:
+- recreate pooled speckle-width versus MFR figures,
+- recreate eta-sweep summary figures,
+- recreate tracked-speckle convergence figures,
+- display normalized intensity profiles from a single propagation realization,
+- display tracked-structure overlays on selected intensity planes.
 
-**Notes:**
-- `N` varies per speckle, representing its lifetime across frames.  
-- Each iteration group contains multiple speckle subgroups (`s0000`, `s0001`, …).  
-- Captures both spatial (x, y) motion and temporal (z) persistence of localized intensity peaks, used for computing lifetime distributions, confinement metrics, and width evolution statistics.
+The notebook is intended to be run after downloading the files in `GitHub_Data/` and updating local directory paths.
 
 ---
 
 ## Comments
 
-- All data presented here can be derived from the field profiles in  
-  `w0=0.01_Cn2=1e-13_l0=0.005_l=0_p=0_iteration=412.h5`.  
-- 500 total iterations exist; iteration 412 was selected at random.  
-- Additional data for other `Cn2`, `l0`, and `w0` values are available upon request but omitted due to size constraints.
+- The repository contains only the files needed to recreate the figures associated with the paper.
+- Reduced files are used where possible to avoid uploading the full simulation archive.
+- The included HDF5 files preserve the internal structure needed by the plotting scripts and notebook.
+- The notebook provides a direct entry point for reproducing the paper figures from the reduced data products in `GitHub_Data/`.
+- Additional data for other thresholds, beam parameters, or turbulence strengths are omitted due to repository size constraints.
