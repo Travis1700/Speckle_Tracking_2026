@@ -10,7 +10,7 @@ This repository contains code and selected reduced data products used to recreat
 ## Need to know
 
 1. This repository contains the code and reduced data files needed to reproduce the figures included in the paper.
-2. Download the notebook **`Figure_Recreation_Notebook_with_tracking_example_zoomed.ipynb`**.
+2. Download the notebook **`Figure_Recreation_Notebook.ipynb`**.
 3. Download the files within **`GitHub_Data/`**.
 4. Update directory paths in the notebook so they point to your local copies of the downloaded files.
 5. The repository contains reduced figure-generation data products, not the full simulation archive.
